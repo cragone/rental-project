@@ -1,16 +1,16 @@
 import React from 'react';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import Home from './pages/home';
-import Root from './pages/root';
 import PaymentPage from './pages/PaymentPage';
 import SubmitProblemPage from './pages/SubmitProblemPage';
 import OpenRentalsPage from './pages/OpenRentalsPage';
+import LoginPage from './pages/LoginPage';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Root />} />
+        <Route path="/" element={<LoginPage />} />
         <Route path="/home" element={<Home />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/submit-problem" element={<SubmitProblemPage />} />
