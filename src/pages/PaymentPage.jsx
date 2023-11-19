@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { Container, Typography, TextField, Button } from '@mui/material';
+import { Container, Typography, Button, Box } from '@mui/material';
+import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 
 const PaymentPage = () => {
-  const [amount, setAmount] = useState('');
+  const [amountsDue, setAmountsDue] = useState([
+    { id: 1, due: 100 },
+    { id: 2, due: 200 },
+    { id: 3, due: 150 },
+    // Add more amounts due as needed
+  ]);
 
-  const handlePayment = () => {
+  const handlePayment = (due) => {
     // Handle payment logic here, e.g., sending payment details to a server
-    console.log(`Processing payment of $${amount}`);
+    console.log(`Processing payment of $${due}`);
     // Redirect or show success message after payment
-  };
-
-  const handleAmountChange = (event) => {
-    setAmount(event.target.value);
   };
 
   return (
@@ -19,30 +21,30 @@ const PaymentPage = () => {
       <Typography variant="h3" gutterBottom>
         Payment Portal
       </Typography>
-      <Typography variant="body1" gutterBottom>
-        Enter the amount to pay:
+
+      <Typography variant="h5" gutterBottom>
+        Amounts Due:
       </Typography>
+      {amountsDue.map((item) => (
+        <Box key={item.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 2 }}>
+          <Typography variant="body1" sx={{ marginRight: '10px' }}>${item.due}</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handlePayment(item.due)}
+          >
+            Pay Now
+          </Button>
+        </Box>
+      ))}
 
-      <TextField
-        label="Amount"
-        variant="outlined"
-        type="number"
-        value={amount}
-        onChange={handleAmountChange}
-        sx={{ mt: 2 }}
-      />
-
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handlePayment}
-        disabled={!amount}
-        sx={{ mt: 2 }}
-      >
-        Pay Now
+      {/* Link to Old Payments Page */}
+      <Button component={Link} to="/old-payments" variant="contained" color="secondary">
+        Old Payments
       </Button>
-
-      {/* Additional UI for payment status or other information can be added here */}
+      <Button variant="contained" color="secondary" sx={{ mt: 3 }}>
+        Need Help?
+      </Button>
     </Container>
   );
 };
