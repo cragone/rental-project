@@ -4,9 +4,9 @@ import { Container, Typography, Button, Grid } from '@mui/material';
 
 const Home = () => {
   return (
-    <Container maxWidth="md" sx={{ textAlign: 'center', mt: 4 }}>
+    <Container maxWidth="xl" sx={{ textAlign: 'center', mt: 4 }}>
       <Typography variant="h3" gutterBottom>
-        Welcome to the Rental Portal
+        Rental Portal
       </Typography>
       <Typography variant="body1" gutterBottom>
         Pay your rent conveniently online
