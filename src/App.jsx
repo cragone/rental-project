@@ -5,6 +5,7 @@ import PaymentPage from './pages/PaymentPage';
 import SubmitProblemPage from './pages/SubmitProblemPage';
 import OpenRentalsPage from './pages/OpenRentalsPage';
 import LoginPage from './pages/LoginPage';
+import OldPaymentsPage from './pages/OldPaymentsPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/submit-problem" element={<SubmitProblemPage />} />
         <Route path="/open-rentals" element={<OpenRentalsPage />} />
+        <Route path="/old-payments" element={<OldPaymentsPage />} />
         {/* Add more routes for other pages if needed */}
       </Routes>
     </Router>
