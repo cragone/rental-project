@@ -6,6 +6,7 @@ import SubmitProblemPage from './pages/SubmitProblemPage';
 import OpenRentalsPage from './pages/OpenRentalsPage';
 import LoginPage from './pages/LoginPage';
 import OldPaymentsPage from './pages/OldPaymentsPage';
+import RegisterPage from './pages/RegisterPage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/submit-problem" element={<SubmitProblemPage />} />
         <Route path="/open-rentals" element={<OpenRentalsPage />} />
         <Route path="/old-payments" element={<OldPaymentsPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         {/* Add more routes for other pages if needed */}
       </Routes>
     </Router>
