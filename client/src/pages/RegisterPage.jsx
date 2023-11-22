@@ -49,7 +49,6 @@ const RegisterPage = () => {
           First Payment Date
         </Typography>
         <TextField
-          label="Payment Date"
           variant="outlined"
           type="date"
           fullWidth
@@ -70,7 +69,6 @@ const RegisterPage = () => {
           End of Lease Date
         </Typography>
         <TextField
-          label="End of Lease"
           variant="outlined"
           type="date"
           fullWidth
