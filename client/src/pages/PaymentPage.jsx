@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Container, Typography, Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Button, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 
+
 const PaymentPage = () => {
   const [amountsDue, setAmountsDue] = useState([
     { id: 1, due: 100, dueDate: '2023-12-01', type: 'Utility' },
