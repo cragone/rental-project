@@ -1,16 +1,18 @@
 import React from 'react';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
-import Home from './pages/home';
+import ButtonAppBar from './ButtonAppBar'; // Import the ButtonAppBar component
+import Home from './pages/Home';
 import PaymentPage from './pages/PaymentPage';
 import SubmitProblemPage from './pages/SubmitProblemPage';
 import OpenRentalsPage from './pages/OpenRentalsPage';
-import LoginPage from './pages/LoginPage';
 import OldPaymentsPage from './pages/OldPaymentsPage';
 import RegisterPage from './pages/RegisterPage';
+import LoginPage from './pages/LoginPage';
 
 function App() {
   return (
     <Router>
+      <ButtonAppBar /> {/* Include the ButtonAppBar component */}
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/home" element={<Home />} />
