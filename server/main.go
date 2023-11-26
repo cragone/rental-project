@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"server/handlers"
+	"server/middleware"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -11,7 +13,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello, World!")
+
 	if err := godotenv.Load(); err != nil {
 		fmt.Println("Error loading .env file")
 	}
@@ -20,14 +22,22 @@ func main() {
 	config.AllowOrigins = []string{"*"}
 	r := gin.Default()
 
+	r.LoadHTMLGlob("templates/*")
+
+	r.Static("/assets", "./assets")
+
 	auth := r.Group("/auth")
-	auth.GET("/newuser", func(c *gin.Context) {
-		c.JSON(http.StatusAccepted, gin.H{"response": "good"})
-	})
+	auth.POST("/login", func(c *gin.Context) { fmt.Println("login route triggered") })
+
+	admin := r.Group("/admin")
+	admin.Use(middleware.RequiresAdmin)
+
+	admin.GET("/registeruser", handlers.RegisterUser)
 
 	r.NoRoute(func(c *gin.Context) {
-		c.JSON(http.StatusAccepted, gin.H{"response": "default"})
+		c.HTML(http.StatusOK, "index.html", nil)
 	})
 
+	fmt.Println("Server Started")
 	r.Run(":80")
 }
