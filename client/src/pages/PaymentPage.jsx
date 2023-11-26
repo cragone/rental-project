@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Container, Typography, Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Button, Box } from '@mui/material';
+import { Container, Typography, Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Button, Box, useMediaQuery } from '@mui/material';
 import { Link } from 'react-router-dom';
-
 
 const PaymentPage = () => {
   const [amountsDue, setAmountsDue] = useState([
@@ -17,8 +16,10 @@ const PaymentPage = () => {
     // Redirect or show success message after payment
   };
 
+  const isMobile = useMediaQuery('(max-width:600px)');
+
   return (
-    <Container maxWidth="md" sx={{ textAlign: 'center', mt: 4 }}>
+    <Container maxWidth="md" sx={{ textAlign: 'center', mt: 4, position: 'relative' }}>
       <Typography variant="h3" gutterBottom>
         Payment Portal
       </Typography>
@@ -55,13 +56,20 @@ const PaymentPage = () => {
       </TableContainer>
 
       {/* Link to Old Payments Page */}
-      <Box sx={{ mt: 3 }}>
+      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
         <Button component={Link} to="/old-payments" variant="contained" color="secondary">
           Old Payments
         </Button>
         <Button component={Link} to="/submit-problem" variant="contained" color="secondary" sx={{ ml: 2 }}>
           Need Help?
         </Button>
+      </Box>
+
+      {/* Address Box */}
+      <Box sx={{ mt: 3, textAlign: 'center', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}>
+        <Typography variant="body1">
+          Address:  1st Floor, 490 Yates St, Albany, NY 12208
+        </Typography>
       </Box>
     </Container>
   );
