@@ -48,6 +48,19 @@ const Home = () => {
             View Rentals
           </Button>
         </Grid>
+
+        {/* New section for registration link */}
+        <Grid item xs={12} sx={{ mt: 4 }}>
+          <Typography variant="h5" gutterBottom>
+            Register Account
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            Register a new account to get started
+          </Typography>
+          <Button component={Link} to="/register" variant="contained" color="primary">
+            Register
+          </Button>
+        </Grid>
       </Grid>
 
       <Typography variant="body2" sx={{ mt: 4 }}>
@@ -58,4 +71,3 @@ const Home = () => {
 };
 
 export default Home;
-
