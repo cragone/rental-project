@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Typography, Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Button, Box, useMediaQuery } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 const PaymentPage = () => {
-  const [amountsDue, setAmountsDue] = useState([
-    { id: 1, due: 100, dueDate: '2023-12-01', type: 'Utility' },
-    { id: 2, due: 200, dueDate: '2023-12-05', type: 'Rent' },
-    { id: 3, due: 150, dueDate: '2023-12-10', type: 'Late Fee' },
-    // Add more amounts due as needed
-  ]);
+  const [amountsDue, setAmountsDue] = useState([]); // Define state for amountsDue
+
+  const fetchPaymentData = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/payments'); // Full URL to the Flask API endpoint
+      if (response.ok) {
+        const data = await response.json();
+        setAmountsDue(data); // Update state with fetched data
+        console.log(data);
+      } else {
+        throw new Error('Failed to fetch data');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      // Handle error (show message, retry logic, etc.)
+    }
+  };
+
+  useEffect(() => {
+    fetchPaymentData(); // Call the fetch function
+  }, []);
+
 
   const handlePayment = (due) => {
     // Handle payment logic here, e.g., sending payment details to a server
