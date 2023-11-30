@@ -29,6 +29,7 @@ const PaymentPage = () => {
     fetchPaymentData();
   }, []);
 
+  //below is useeffect to put address at bottom of page
   useEffect(() => {
     console.log(fetchAddressData())
   }, []);
