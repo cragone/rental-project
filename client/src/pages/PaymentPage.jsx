@@ -1,33 +1,39 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Container, Typography, Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Button, Box, useMediaQuery } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 const PaymentPage = () => {
-  const [amountsDue, setAmountsDue] = useState([]); // Define state for amountsDue
+  const [amountsDue, setAmountsDue] = useState([]);
 
   const fetchPaymentData = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/payments'); // Full URL to the Flask API endpoint
-      if (response.ok) {
-        const data = await response.json();
-        setAmountsDue(data); // Update state with fetched data
-        console.log(data);
+      const response = await axios.get('http://localhost:5000/api/payments');
+      if (response.status === 200) {
+        setAmountsDue(response.data);
+        console.log(response.data);
       } else {
         throw new Error('Failed to fetch data');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      // Handle error (show message, retry logic, etc.)
     }
   };
 
+  function fetchAddressData(){
+    return '1st Floor, 490 Yates St, Albany, NY 12208'
+  }; // Define the address constant
+
+
   useEffect(() => {
-    fetchPaymentData(); // Call the fetch function
+    fetchPaymentData();
   }, []);
 
-
+  useEffect(() => {
+    console.log(fetchAddressData())
+  }, []);
+ 
   const handlePayment = (due) => {
-    // Handle payment logic here, e.g., sending payment details to a server
     console.log(`Processing payment of $${due}`);
     // Redirect or show success message after payment
   };
@@ -71,7 +77,6 @@ const PaymentPage = () => {
         </Table>
       </TableContainer>
 
-      {/* Link to Old Payments Page */}
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
         <Button component={Link} to="/old-payments" variant="contained" color="secondary">
           Old Payments
