@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, send_file, g, render_template, make_response, current_app, send_from_directory
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -15,6 +15,7 @@ amounts_due = [
 # Endpoint to fetch payments
 @app.route('/api/payments', methods=['GET'])
 def get_payments():
+    user = request.args.get("user",None,str)
     return jsonify(amounts_due)
 
 if __name__ == '__main__':
