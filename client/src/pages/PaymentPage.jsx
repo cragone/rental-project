@@ -86,7 +86,7 @@ const PaymentPage = () => {
           Need Help?
         </Button>
       </Box>
-
+//will be using a cookie to determine address
       {/* Address Box */}
       <Box sx={{ mt: 3, textAlign: 'center', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}>
         <Typography variant="body1">
