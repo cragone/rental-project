@@ -43,6 +43,11 @@ func main() {
 		property.GET("/list", PropertyList)
 	}
 
+	tennant := r.Group("/tennant")
+	{
+		tennant.POST("/create")
+	}
+
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
 	})
