@@ -15,6 +15,7 @@ CREATE TABLE property_info (
 );
 
 CREATE TABLE brokie (
+    b_id SERIAL PRIMARY KEY,
     payment_day INT,
     rent_rate INT,
     property_id INT REFERENCES property_info(property_id),

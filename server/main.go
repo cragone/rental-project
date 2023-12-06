@@ -45,7 +45,7 @@ func main() {
 
 	tennant := r.Group("/tennant")
 	{
-		tennant.POST("/create")
+		tennant.POST("/create", handlers.CreateTennant)
 	}
 
 	r.NoRoute(func(c *gin.Context) {
