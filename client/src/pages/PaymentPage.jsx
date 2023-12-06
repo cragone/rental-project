@@ -102,9 +102,10 @@ const PaymentPage = () => {
 
       {/* Address Box */}
       <Box sx={{ mt: 3, textAlign: 'center', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}>
-        <Typography variant="body1">
-          Address: {address}
-        </Typography>
+      <Typography variant="body1">
+  Address: {address.address} {/* Extract the address value */}
+</Typography>
+
       </Box>
     </Container>
   );
