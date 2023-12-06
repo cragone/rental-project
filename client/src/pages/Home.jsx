@@ -39,12 +39,12 @@ const Home = () => {
 
         <Grid item xs={12} sm={4}>
           <Typography variant="h5" gutterBottom>
-            Open Rentals
+            Rental Management
           </Typography>
           <Typography variant="body1" gutterBottom>
-            View available rentals and properties
+            View rental and property details
           </Typography>
-          <Button component={Link} to="/open-rentals" variant="contained" color="primary">
+          <Button component={Link} to="/rental-management" variant="contained" color="primary">
             View Rentals
           </Button>
         </Grid>
