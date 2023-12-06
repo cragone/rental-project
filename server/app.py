@@ -18,5 +18,12 @@ def get_payments():
     user = request.args.get("user",None,str)
     return jsonify(amounts_due)
 
+rental_address = "1st Floor, 490 Yates St, Albany, NY 12208"
+
+@app.route('/api/address', methods=['GET'])
+def get_address():
+    user = request.args.get("user", None, str)
+    return jsonify({'address': rental_address})
+
 if __name__ == '__main__':
     app.run(debug=True)

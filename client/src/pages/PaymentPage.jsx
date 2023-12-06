@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Container, Typography, Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Button, Box, useMediaQuery } from '@mui/material';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+
 
 const PaymentPage = () => {
   const [amountsDue, setAmountsDue] = useState([]);
+  const [address, setAddress] = useState('');
 
   const fetchPaymentData = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/payments');
-      if (response.status === 200) {
-        setAmountsDue(response.data);
-        console.log(response.data);
+      const response = await fetch('http://localhost:5000/api/payments');
+      if (response.ok) {
+        const data = await response.json();
+        setAmountsDue(data);
+        console.log(data);
       } else {
         throw new Error('Failed to fetch data');
       }
@@ -20,20 +23,30 @@ const PaymentPage = () => {
     }
   };
 
-  function fetchAddressData(){
-    return '1st Floor, 490 Yates St, Albany, NY 12208'
-  }; // Define the address constant
-
-
+  const fetchAddressData = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/address');
+      if (response.status === 200) {
+        const data = response.data;
+        setAddress(data);
+        console.log(data);
+      } else {
+        throw new Error('Failed to fetch address data');
+      }
+    } catch (error) {
+      console.error('Error fetching address data:', error);
+    }
+  };
+  
   useEffect(() => {
     fetchPaymentData();
   }, []);
 
-  //below is useeffect to put address at bottom of page
   useEffect(() => {
-    console.log(fetchAddressData())
+    fetchAddressData();
   }, []);
- 
+  
+
   const handlePayment = (due) => {
     console.log(`Processing payment of $${due}`);
     // Redirect or show success message after payment
@@ -86,11 +99,11 @@ const PaymentPage = () => {
           Need Help?
         </Button>
       </Box>
-//will be using a cookie to determine address
+
       {/* Address Box */}
       <Box sx={{ mt: 3, textAlign: 'center', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}>
         <Typography variant="body1">
-          Address:  1st Floor, 490 Yates St, Albany, NY 12208
+          Address: {address}
         </Typography>
       </Box>
     </Container>
