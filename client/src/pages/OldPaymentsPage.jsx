@@ -11,6 +11,10 @@ const OldPaymentsPage = () => {
     // Add more old payment objects as needed
   ];
 
+  useEffect(() => {
+    fetchFilledInvoices();
+  }, []);
+
   return (
     <Container maxWidth="md" sx={{ textAlign: 'center', mt: 4 }}>
       <Typography variant="h3" gutterBottom>
