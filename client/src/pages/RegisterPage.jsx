@@ -31,7 +31,7 @@ const RegisterPage = () => {
       </Typography>
       <form onSubmit={(e) => { e.preventDefault(); handleRegister(); }}>
         <TextField
-          label="Username"
+          label="Full Name"
           variant="outlined"
           fullWidth
           value={username}
