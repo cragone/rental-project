@@ -46,6 +46,7 @@ func main() {
 	tennant := r.Group("/tennant")
 	{
 		tennant.POST("/create", handlers.CreateTennant)
+		tennant.GET("/get", handlers.GetTennant)
 	}
 
 	r.NoRoute(func(c *gin.Context) {
@@ -176,4 +177,8 @@ func PropertyList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"propertyList": properties})
+}
+
+func PropertyTennants() {
+
 }
