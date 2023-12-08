@@ -71,3 +71,53 @@ func CreateTennant(c *gin.Context) {
 	c.JSON(http.StatusAccepted, gin.H{"response": "accepted"})
 
 }
+
+func GetTennant(c *gin.Context) {
+	var payload = struct {
+		TennantID int `json:"tennantID"`
+	}{}
+
+	err := c.BindJSON(&payload)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	dbname := os.Getenv("POSTGES_DB")
+	dbuser := os.Getenv("POSTGRES_USERNAME")
+	dbpassword := os.Getenv("POSTGRES_PASSWORD")
+	dbhost := os.Getenv("POSTGRES_HOST")
+
+	connString := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=require port=5432", dbname, dbuser, dbpassword, dbhost)
+
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	defer db.Close()
+
+	var tennant Tennant
+
+	query := `SELECT 
+		payment_day,
+		rent_rate,
+		property_id,
+		active,
+		email 
+		FROM brokie WHERE b_id = $1`
+
+	row := db.QueryRow(query, payload.TennantID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = row.Scan(&tennant.PaymentDay, &tennant.RentRate, &tennant.PropertyID, &tennant.ActiveStatus, &tennant.Email)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"tennant": tennant})
+
+}
