@@ -47,6 +47,7 @@ func main() {
 	{
 		tennant.POST("/create", handlers.CreateTennant)
 		tennant.GET("/get", handlers.GetTennant)
+		tennant.GET("/property_tennants", PropertyTennantIDList)
 	}
 
 	r.NoRoute(func(c *gin.Context) {
@@ -179,6 +180,51 @@ func PropertyList(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"propertyList": properties})
 }
 
-func PropertyTennants() {
+func PropertyTennantIDList(c *gin.Context) {
+	var payload = struct {
+		PropertyID int `json:"propertyID"`
+	}{}
+
+	err := c.BindJSON(&payload)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	dbname := os.Getenv("POSTGES_DB")
+	dbuser := os.Getenv("POSTGRES_USERNAME")
+	dbpassword := os.Getenv("POSTGRES_PASSWORD")
+	dbhost := os.Getenv("POSTGRES_HOST")
+
+	connString := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=require port=5432", dbname, dbuser, dbpassword, dbhost)
+
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT b_id FROM brokie WHERE property_id = $1", payload.PropertyID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	defer db.Close()
+
+	var tennantIDs []int
+
+	for rows.Next() {
+		var tennantID int
+		err = rows.Scan(&tennantID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		tennantIDs = append(tennantIDs, tennantID)
+
+	}
+
+	c.JSON(http.StatusBadRequest, gin.H{"response": tennantIDs})
 
 }
