@@ -29,5 +29,5 @@ CREATE TABLE invoice (
     payment_status VARCHAR(255),
     payment_type VARCHAR(255),
     payment_id SERIAL PRIMARY KEY,
-    tennant_id VARCHAR(255) REFERENCES brokie(b_id) 
+    tennant_id INT REFERENCES brokie(b_id) 
 );
