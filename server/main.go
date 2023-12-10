@@ -6,10 +6,13 @@ import (
 	"net/http"
 	"os"
 	"server/handlers"
+	"server/invoice"
 	"server/middleware"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-co-op/gocron"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -53,6 +56,14 @@ func main() {
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
 	})
+
+	// CRON job for setting up invoices
+	s := gocron.NewScheduler(time.UTC)
+	// How often do we run the task?
+	// In prod Every(1).Day().At("10:30").Do(task)
+	s.Every(100).Second().Do(invoice.GenerateAllInvoices)
+	// start the scheduler
+	s.StartAsync()
 
 	fmt.Println("Server Started")
 	fmt.Println("here is my change")
