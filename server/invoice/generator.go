@@ -3,13 +3,15 @@ package invoice
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"time"
 )
 
 func GenerateAllInvoices() {
-	fmt.Println("all invoices have been generated")
-	pullValidTennants()
+	tennants := pullValidTennants()
+	GenerateInvoices(tennants)
+
 }
 
 type Tennant struct {
@@ -17,12 +19,10 @@ type Tennant struct {
 	Rate      int
 }
 
-func pullValidTennants() {
+func pullValidTennants() []Tennant {
 
-	// Get the day it is in the month
-	day := time.Now().Day()
-
-	fmt.Println(day)
+	// generate an invoice a week before it is due
+	day := time.Now().Add(time.Hour * 24 * 7).Day()
 
 	// Criteria:
 	// Must be the correct day of month
@@ -44,7 +44,7 @@ func pullValidTennants() {
 	}
 	defer db.Close()
 
-	rows, err := db.Query("SELECT b_id, amount FROM brokie WHERE payment_day = $1 AND active = 'Y'")
+	rows, err := db.Query("SELECT b_id, rent_rate FROM brokie WHERE payment_day = $1 AND active = 'Y'", day)
 	if err != nil {
 		panic(err)
 	}
@@ -61,7 +61,42 @@ func pullValidTennants() {
 		validTennants = append(validTennants, ten)
 	}
 
-	// Not done need to test and pass data
-	fmt.Println(validTennants)
+	return validTennants
+}
 
+func GenerateInvoices(tennants []Tennant) {
+
+	dbname := os.Getenv("POSTGES_DB")
+	dbuser := os.Getenv("POSTGRES_USERNAME")
+	dbpassword := os.Getenv("POSTGRES_PASSWORD")
+	dbhost := os.Getenv("POSTGRES_HOST")
+
+	connString := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=require port=5432", dbname, dbuser, dbpassword, dbhost)
+
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, tennant := range tennants {
+		_, err = tx.Exec("INSERT INTO invoice (due_date, tennant_id, amount) VALUES ((CURRENT_DATE - INTERVAL '7 days'), $1, $2)", tennant.TennantID, tennant.Rate)
+		if err != nil {
+			tx.Rollback()
+			log.Fatal(err)
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// TODO mail a report to admin of the invoices generated
+	fmt.Println("sucessfully generated invoices")
 }

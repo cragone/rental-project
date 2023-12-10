@@ -60,8 +60,9 @@ func main() {
 	// CRON job for setting up invoices
 	s := gocron.NewScheduler(time.UTC)
 	// How often do we run the task?
-	// In prod Every(1).Day().At("10:30").Do(task)
-	s.Every(100).Second().Do(invoice.GenerateAllInvoices)
+	// In prod
+	s.Every(1).Day().At("2:00").Do(invoice.GenerateAllInvoices)
+	// s.Every(100).Second().Do(invoice.GenerateAllInvoices)
 	// start the scheduler
 	s.StartAsync()
 
