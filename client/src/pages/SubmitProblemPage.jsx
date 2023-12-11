@@ -1,14 +1,30 @@
 import React, { useState } from 'react';
 import { Container, Typography, TextField, Button } from '@mui/material';
 
-
 const SubmitProblemPage = () => {
   const [problem, setProblem] = useState('');
 
-  const handleSubmitProblem = () => {
-    // Logic to handle submitting the problem, e.g., sending it to a server
-    console.log(`Submitted problem: ${problem}`);
-    // Redirect or show success message after submission
+  const handleSubmitProblem = async () => {
+    try {
+      const response = await fetch('http://your-backend-url/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ problem }), // Send the problem description to the backend
+      });
+
+      if (response.ok) {
+        console.log('Problem submitted successfully!');
+        // Redirect or show success message after submission
+      } else {
+        console.error('Failed to submit problem');
+        // Handle error or show an error message
+      }
+    } catch (error) {
+      console.error('Error submitting problem:', error);
+      // Handle error or show an error message
+    }
   };
 
   const handleProblemChange = (event) => {
