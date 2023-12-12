@@ -75,7 +75,8 @@ const RentalManagementPage = () => {
           </ListItem>
         ))}
       </List>
-
+//is a modal how we should handle rentals, what if the rental is bigger? 
+//could this be okay because it would be by unit not address?
       <Modal
         open={openChart}
         onClose={handleCloseChart}
