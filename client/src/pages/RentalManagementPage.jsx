@@ -9,13 +9,13 @@ import {
   Modal,
   Box,
 } from '@mui/material';
-
+//still needs way to handle updating information
 const RentalManagementPage = () => {
   const [selectedRental, setSelectedRental] = useState(null);
   const [openChart, setOpenChart] = useState(false);
   const [rentals, setRentals] = useState([]);
 
-  // Simulated renter information
+  // Switch to pull renter information from api
   useEffect(() => {
     // Simulated data for demonstration purposes
     const simulatedRentalData = [
