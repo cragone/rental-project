@@ -1,11 +1,14 @@
 package invoice
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"time"
+
+	"github.com/plutov/paypal/v4"
 )
 
 func GenerateAllInvoices() {
@@ -99,4 +102,33 @@ func GenerateInvoices(tennants []Tennant) {
 
 	// TODO mail a report to admin of the invoices generated
 	fmt.Println("sucessfully generated invoices")
+}
+
+func GeneratePaypal() {
+
+	client, err := paypal.NewClient(os.Getenv("PAYPAL_CLIENT_ID"), os.Getenv("PAYPAL_SECRET"), "https://api.sandbox.paypal.com")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(client)
+
+	ctx := context.Background()
+
+	order, err := client.CreateOrder(ctx, "CAPTURE",
+		[]paypal.PurchaseUnitRequest{
+			{
+				Amount: &paypal.PurchaseUnitAmount{
+					Currency: "USD",
+					Value:    "20.00",
+				},
+			},
+		}, &paypal.CreateOrderPayer{}, &paypal.ApplicationContext{})
+
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("below here")
+	fmt.Println(order.ID)
+
 }
