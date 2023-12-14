@@ -47,6 +47,12 @@ const RentalManagementPage = () => {
     setOpenChart(false);
   };
 
+  const handleEdit = () => {
+    // Placeholder for editing action
+    console.log(`Editing rental: ${selectedRental}`);
+    // Add logic for editing rental details here
+  };
+
   return (
     <Container maxWidth="md" sx={{ textAlign: 'center', mt: 4 }}>
       <Typography variant="h3" gutterBottom>
@@ -75,8 +81,7 @@ const RentalManagementPage = () => {
           </ListItem>
         ))}
       </List>
-//is a modal how we should handle rentals, what if the rental is bigger? 
-//could this be okay because it would be by unit not address?
+
       <Modal
         open={openChart}
         onClose={handleCloseChart}
@@ -125,6 +130,9 @@ const RentalManagementPage = () => {
                 })}
             </tbody>
           </table>
+          <Button variant="contained" onClick={handleEdit}>
+            Edit
+          </Button>
           <Button variant="contained" onClick={handleCloseChart}>
             Close Chart
           </Button>
