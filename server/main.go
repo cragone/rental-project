@@ -67,7 +67,9 @@ func main() {
 	s.StartAsync()
 
 	fmt.Println("Server Started")
-	fmt.Println("here is my change")
+
+	invoice.GeneratePaypal()
+
 	r.Run(":80")
 }
 

@@ -1,11 +1,17 @@
 package invoice
 
 import (
+	"bytes"
+	"context"
 	"database/sql"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"time"
+
+	"github.com/plutov/paypal/v4"
 )
 
 func GenerateAllInvoices() {
@@ -99,4 +105,84 @@ func GenerateInvoices(tennants []Tennant) {
 
 	// TODO mail a report to admin of the invoices generated
 	fmt.Println("sucessfully generated invoices")
+}
+
+type TokenResponse struct {
+	Scope       string `json:"scope"`
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	AppID       string `json:"app_id"`
+	ExpiresIn   int    `json:"expires_in"`
+	Nonce       string `json:"nonce"`
+}
+
+func GeneratePaypal() {
+
+	// Prepare the request body using environment variables
+	// orderIntent := "CAPTURE"
+	clientID := os.Getenv("PAYPAL_CLIENT_ID")
+	secret := os.Getenv("PAYPAL_SECRET")
+
+	apiURL := paypal.APIBaseSandBox
+
+	// Create a client instance
+	c, err := paypal.NewClient(clientID, secret, apiURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.SetLog(os.Stdout) // Set log to terminal stdout
+
+	accessToken, err := c.GetAccessToken(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("token:")
+	fmt.Println(accessToken.Token)
+
+	rawOrderJSON := `{
+		"intent": "CAPTURE",
+		"purchase_units": [
+			{
+				"amount": {
+					"currency_code": "USD",
+					"value": "100.00"
+				  }
+			}
+		]
+		
+	}`
+
+	// Create the HTTP request for order creation
+	req, err := http.NewRequest("POST", apiURL+"/v2/checkout/orders", bytes.NewBuffer([]byte(rawOrderJSON)))
+	if err != nil {
+		fmt.Println("Error creating order request:", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+accessToken.Token)
+
+	// Send the order creation request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error making order request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Process the order creation response
+	// ...
+
+	// Print the response status code and body for demonstration purposes
+	fmt.Println("Response Status:", resp.Status)
+	fmt.Println("Response Body:")
+	// Read and print the response body
+	buf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return
+	}
+	fmt.Println(string(buf))
+
 }
