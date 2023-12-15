@@ -117,28 +117,25 @@ type TokenResponse struct {
 	Nonce       string `json:"nonce"`
 }
 
-func GeneratePaypal(amount int) (string, error) {
+func GeneratePaypalOrder(amount int) (string, error) {
 
 	// Prepare the request body using environment variables
 	// orderIntent := "CAPTURE"
 	clientID := os.Getenv("PAYPAL_CLIENT_ID")
 	secret := os.Getenv("PAYPAL_SECRET")
 
-	apiURL := paypal.APIBaseSandBox
+	apiURL := os.Getenv("PAYPAL_BASE_URL")
 
 	// Create a client instance
 	c, err := paypal.NewClient(clientID, secret, apiURL)
 	if err != nil {
 		return "", err
 	}
-	c.SetLog(os.Stdout) // Set log to terminal stdout
 
 	accessToken, err := c.GetAccessToken(context.Background())
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("token:")
-	fmt.Println(accessToken.Token)
 
 	rawOrderJSON := fmt.Sprintf(`{
 		"intent": "CAPTURE",
@@ -170,15 +167,11 @@ func GeneratePaypal(amount int) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	// Print the response status code and body for demonstration purposes
-	fmt.Println("Response Status:", resp.Status)
-	fmt.Println("Response Body:")
 	// Read and print the response body
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(string(buf))
 
 	type body struct {
 		ID string `json:"id"`
@@ -191,7 +184,59 @@ func GeneratePaypal(amount int) (string, error) {
 		return "", err
 	}
 
-	fmt.Println(orderID.ID)
-
 	return orderID.ID, nil
+}
+
+func CheckPaypalOrder(orderID string) (string, error) {
+	// sample 143534824A8662459
+	clientID := os.Getenv("PAYPAL_CLIENT_ID")
+	secret := os.Getenv("PAYPAL_SECRET")
+
+	apiURL := os.Getenv("PAYPAL_BASE_URL")
+
+	// Create a client instance
+	c, err := paypal.NewClient(clientID, secret, apiURL)
+	if err != nil {
+		return "", err
+	}
+	c.SetLog(os.Stdout) // Set log to terminal stdout
+
+	accessToken, err := c.GetAccessToken(context.Background())
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest("GET", apiURL+fmt.Sprintf("/v2/checkout/orders/%s", orderID), nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+accessToken.Token)
+
+	// Send the order creation request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	buf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	type body struct {
+		Status string `json:"status"`
+	}
+
+	var status body
+
+	err = json.Unmarshal(buf, &status)
+	if err != nil {
+		return "", err
+	}
+
+	return status.Status, nil
 }

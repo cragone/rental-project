@@ -8,6 +8,7 @@ import RentalManagementPage from './pages/RentalManagementPage';
 import OldPaymentsPage from './pages/OldPaymentsPage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
+import PaymentTest from './pages/PaymentTest';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/rental-management" element={<RentalManagementPage />} />
         <Route path="/old-payments" element={<OldPaymentsPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/payment-test" element={<PaymentTest />} />
         {/* Add more routes for other pages if needed */}
       </Routes>
     </Router>
