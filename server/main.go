@@ -68,7 +68,11 @@ func main() {
 
 	fmt.Println("Server Started")
 
-	invoice.GeneratePaypal()
+	id, err := invoice.GeneratePaypal(300)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(id)
 
 	r.Run(":80")
 }

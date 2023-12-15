@@ -1,0 +1,26 @@
+{
+    "id": "7W158515TS872225G",
+    "status": "CREATED",
+    "links": [
+        {
+            "href": "https://api.sandbox.paypal.com/v2/checkout/orders/7W158515TS872225G",
+            "rel": "self",
+            "method": "GET"
+        },
+        {
+            "href": "https://www.sandbox.paypal.com/checkoutnow?token=7W158515TS872225G",
+            "rel": "approve",
+            "method": "GET"
+        },
+        {
+            "href": "https://api.sandbox.paypal.com/v2/checkout/orders/7W158515TS872225G",
+            "rel": "update",
+            "method": "PATCH"
+        },
+        {
+            "href": "https://api.sandbox.paypal.com/v2/checkout/orders/7W158515TS872225G/capture",
+            "rel": "capture",
+            "method": "POST"
+        }
+    ]
+}

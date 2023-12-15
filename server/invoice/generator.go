@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -116,7 +117,7 @@ type TokenResponse struct {
 	Nonce       string `json:"nonce"`
 }
 
-func GeneratePaypal() {
+func GeneratePaypal(amount int) (string, error) {
 
 	// Prepare the request body using environment variables
 	// orderIntent := "CAPTURE"
@@ -128,35 +129,34 @@ func GeneratePaypal() {
 	// Create a client instance
 	c, err := paypal.NewClient(clientID, secret, apiURL)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	c.SetLog(os.Stdout) // Set log to terminal stdout
 
 	accessToken, err := c.GetAccessToken(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	fmt.Println("token:")
 	fmt.Println(accessToken.Token)
 
-	rawOrderJSON := `{
+	rawOrderJSON := fmt.Sprintf(`{
 		"intent": "CAPTURE",
 		"purchase_units": [
 			{
 				"amount": {
 					"currency_code": "USD",
-					"value": "100.00"
+					"value": "%d.00"
 				  }
 			}
 		]
 		
-	}`
+	}`, amount)
 
 	// Create the HTTP request for order creation
 	req, err := http.NewRequest("POST", apiURL+"/v2/checkout/orders", bytes.NewBuffer([]byte(rawOrderJSON)))
 	if err != nil {
-		fmt.Println("Error creating order request:", err)
-		return
+		return "", err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -166,13 +166,9 @@ func GeneratePaypal() {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error making order request:", err)
-		return
+		return "", err
 	}
 	defer resp.Body.Close()
-
-	// Process the order creation response
-	// ...
 
 	// Print the response status code and body for demonstration purposes
 	fmt.Println("Response Status:", resp.Status)
@@ -180,9 +176,22 @@ func GeneratePaypal() {
 	// Read and print the response body
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		return
+		return "", err
 	}
 	fmt.Println(string(buf))
 
+	type body struct {
+		ID string `json:"id"`
+	}
+
+	var orderID body
+
+	err = json.Unmarshal(buf, &orderID)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println(orderID.ID)
+
+	return orderID.ID, nil
 }
