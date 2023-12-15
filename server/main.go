@@ -10,7 +10,6 @@ import (
 	"server/middleware"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron"
 	"github.com/joho/godotenv"
@@ -23,9 +22,26 @@ func main() {
 		fmt.Println("Error loading .env file")
 	}
 
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"*"}
+	// config := cors.DefaultConfig()
+	// config.AllowOrigins = []string{"*"}
+
 	r := gin.Default()
+
+	r.SetTrustedProxies(nil)
+
+	// Configure header controls middleware
+	r.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		// Handle preflight requests
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusOK)
+			return
+		}
+		c.Next()
+	})
 
 	r.LoadHTMLGlob("templates/*")
 
@@ -68,7 +84,26 @@ func main() {
 
 	fmt.Println("Server Started")
 
-	invoice.GeneratePaypal()
+	id, err := invoice.GeneratePaypalOrder(300)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("order id:")
+	fmt.Println(id)
+
+	x, err := invoice.CheckPaypalOrder("2AR53697HY170130S")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("order status:")
+	fmt.Println(x)
+
+	order := r.Group("/order")
+	{
+		order.GET("/new", handlers.HandleNewOrder)
+		order.POST("/status", handlers.HandleOrderStatus)
+	}
 
 	r.Run(":80")
 }

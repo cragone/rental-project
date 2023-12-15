@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -116,47 +117,43 @@ type TokenResponse struct {
 	Nonce       string `json:"nonce"`
 }
 
-func GeneratePaypal() {
+func GeneratePaypalOrder(amount int) (string, error) {
 
 	// Prepare the request body using environment variables
 	// orderIntent := "CAPTURE"
 	clientID := os.Getenv("PAYPAL_CLIENT_ID")
 	secret := os.Getenv("PAYPAL_SECRET")
 
-	apiURL := paypal.APIBaseSandBox
+	apiURL := os.Getenv("PAYPAL_BASE_URL")
 
 	// Create a client instance
 	c, err := paypal.NewClient(clientID, secret, apiURL)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	c.SetLog(os.Stdout) // Set log to terminal stdout
 
 	accessToken, err := c.GetAccessToken(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	fmt.Println("token:")
-	fmt.Println(accessToken.Token)
 
-	rawOrderJSON := `{
+	rawOrderJSON := fmt.Sprintf(`{
 		"intent": "CAPTURE",
 		"purchase_units": [
 			{
 				"amount": {
 					"currency_code": "USD",
-					"value": "100.00"
+					"value": "%d.00"
 				  }
 			}
 		]
 		
-	}`
+	}`, amount)
 
 	// Create the HTTP request for order creation
 	req, err := http.NewRequest("POST", apiURL+"/v2/checkout/orders", bytes.NewBuffer([]byte(rawOrderJSON)))
 	if err != nil {
-		fmt.Println("Error creating order request:", err)
-		return
+		return "", err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -166,23 +163,80 @@ func GeneratePaypal() {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error making order request:", err)
-		return
+		return "", err
 	}
 	defer resp.Body.Close()
 
-	// Process the order creation response
-	// ...
-
-	// Print the response status code and body for demonstration purposes
-	fmt.Println("Response Status:", resp.Status)
-	fmt.Println("Response Body:")
 	// Read and print the response body
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		return
+		return "", err
 	}
-	fmt.Println(string(buf))
 
+	type body struct {
+		ID string `json:"id"`
+	}
+
+	var orderID body
+
+	err = json.Unmarshal(buf, &orderID)
+	if err != nil {
+		return "", err
+	}
+
+	return orderID.ID, nil
+}
+
+func CheckPaypalOrder(orderID string) (string, error) {
+	// sample 143534824A8662459
+	clientID := os.Getenv("PAYPAL_CLIENT_ID")
+	secret := os.Getenv("PAYPAL_SECRET")
+
+	apiURL := os.Getenv("PAYPAL_BASE_URL")
+
+	// Create a client instance
+	c, err := paypal.NewClient(clientID, secret, apiURL)
+	if err != nil {
+		return "", err
+	}
+	c.SetLog(os.Stdout) // Set log to terminal stdout
+
+	accessToken, err := c.GetAccessToken(context.Background())
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest("GET", apiURL+fmt.Sprintf("/v2/checkout/orders/%s", orderID), nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+accessToken.Token)
+
+	// Send the order creation request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	buf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	type body struct {
+		Status string `json:"status"`
+	}
+
+	var status body
+
+	err = json.Unmarshal(buf, &status)
+	if err != nil {
+		return "", err
+	}
+
+	return status.Status, nil
 }
