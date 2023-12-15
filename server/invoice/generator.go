@@ -1,10 +1,13 @@
 package invoice
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -104,31 +107,82 @@ func GenerateInvoices(tennants []Tennant) {
 	fmt.Println("sucessfully generated invoices")
 }
 
+type TokenResponse struct {
+	Scope       string `json:"scope"`
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	AppID       string `json:"app_id"`
+	ExpiresIn   int    `json:"expires_in"`
+	Nonce       string `json:"nonce"`
+}
+
 func GeneratePaypal() {
 
-	client, err := paypal.NewClient(os.Getenv("PAYPAL_CLIENT_ID"), os.Getenv("PAYPAL_SECRET"), "https://api.sandbox.paypal.com")
+	// Prepare the request body using environment variables
+	// orderIntent := "CAPTURE"
+	clientID := os.Getenv("PAYPAL_CLIENT_ID")
+	secret := os.Getenv("PAYPAL_SECRET")
+
+	apiURL := paypal.APIBaseSandBox
+
+	// Create a client instance
+	c, err := paypal.NewClient(clientID, secret, apiURL)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
+	c.SetLog(os.Stdout) // Set log to terminal stdout
 
-	fmt.Println(client)
+	accessToken, err := c.GetAccessToken(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("token:")
+	fmt.Println(accessToken.Token)
 
-	ctx := context.Background()
-
-	order, err := client.CreateOrder(ctx, "CAPTURE",
-		[]paypal.PurchaseUnitRequest{
+	rawOrderJSON := `{
+		"intent": "CAPTURE",
+		"purchase_units": [
 			{
-				Amount: &paypal.PurchaseUnitAmount{
-					Currency: "USD",
-					Value:    "20.00",
-				},
-			},
-		}, &paypal.CreateOrderPayer{}, &paypal.ApplicationContext{})
+				"amount": {
+					"currency_code": "USD",
+					"value": "100.00"
+				  }
+			}
+		]
+		
+	}`
 
+	// Create the HTTP request for order creation
+	req, err := http.NewRequest("POST", apiURL+"/v2/checkout/orders", bytes.NewBuffer([]byte(rawOrderJSON)))
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating order request:", err)
+		return
 	}
-	fmt.Println("below here")
-	fmt.Println(order.ID)
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+accessToken.Token)
+
+	// Send the order creation request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error making order request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Process the order creation response
+	// ...
+
+	// Print the response status code and body for demonstration purposes
+	fmt.Println("Response Status:", resp.Status)
+	fmt.Println("Response Body:")
+	// Read and print the response body
+	buf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return
+	}
+	fmt.Println(string(buf))
 
 }
