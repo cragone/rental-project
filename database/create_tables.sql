@@ -27,6 +27,7 @@ CREATE TABLE invoice (
     due_date DATE,
     amount INT,
     payment_status VARCHAR(255),
+    paypal_id VARCHAR(255),
     payment_type VARCHAR(255),
     payment_id SERIAL PRIMARY KEY,
     tennant_id INT REFERENCES brokie(b_id) 

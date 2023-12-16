@@ -92,7 +92,14 @@ func GenerateInvoices(tennants []Tennant) {
 	}
 
 	for _, tennant := range tennants {
-		_, err = tx.Exec("INSERT INTO invoice (due_date, tennant_id, amount) VALUES ((CURRENT_DATE - INTERVAL '7 days'), $1, $2)", tennant.TennantID, tennant.Rate)
+
+		paypalID, err := GeneratePaypalOrder(tennant.Rate)
+		if err != nil {
+			tx.Rollback()
+			log.Fatal(err)
+		}
+
+		_, err = tx.Exec("INSERT INTO invoice (due_date, payment_status, tennant_id, amount, paypal_id) VALUES ((CURRENT_DATE - INTERVAL '7 days'), 'CREATED', $1, $2, $3)", tennant.TennantID, tennant.Rate, paypalID)
 		if err != nil {
 			tx.Rollback()
 			log.Fatal(err)
@@ -137,18 +144,27 @@ func GeneratePaypalOrder(amount int) (string, error) {
 		return "", err
 	}
 
-	rawOrderJSON := fmt.Sprintf(`{
+	// TODO: Need to redirect back to the my-invoices page with some confirmation popup
+	rawOrderJSON := fmt.Sprintf(`
+	{
 		"intent": "CAPTURE",
 		"purchase_units": [
 			{
 				"amount": {
 					"currency_code": "USD",
 					"value": "%d.00"
-				  }
+				}
 			}
-		]
-		
-	}`, amount)
+		],
+		"payment_source": {
+			"paypal": {
+				"experience_context": {
+					"return_url": "https://google.com"
+				}
+			}
+		}
+	}
+	`, amount)
 
 	// Create the HTTP request for order creation
 	req, err := http.NewRequest("POST", apiURL+"/v2/checkout/orders", bytes.NewBuffer([]byte(rawOrderJSON)))
