@@ -20,6 +20,10 @@ func HandleNewOrder(c *gin.Context) {
 
 func HandleOrderStatus(c *gin.Context) {
 
+	// Need to update db to the API response,
+	// if API response fails still check db for value
+	// if both fail then bad request
+
 	var payload = struct {
 		Status string `json:"status"`
 	}{}
