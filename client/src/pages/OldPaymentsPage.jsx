@@ -1,17 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Typography, Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Paper } from '@mui/material';
 
-
 const OldPaymentsPage = () => {
-  // Simulated old payment data (you might fetch this from an API)
-  const oldPayments = [
-    { id: 1, month: 'January', rent: 1000, utilities: 150 },
-    { id: 2, month: 'February', rent: 1000, utilities: 160 },
-    { id: 3, month: 'March', rent: 1050, utilities: 170 },
-    // Add more old payment objects as needed
-  ];
+  const [oldPayments, setOldPayments] = useState([]);
 
+  // Simulated old payment data (you might fetch this from an API)
   useEffect(() => {
+    const fetchFilledInvoices = async () => {
+      try {
+        // Make an API call to fetch payment data
+        const response = await fetch('/api/payments');
+        const data = await response.json();
+        setOldPayments(data); // Update state with fetched data
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
     fetchFilledInvoices();
   }, []);
 
@@ -46,3 +51,4 @@ const OldPaymentsPage = () => {
 };
 
 export default OldPaymentsPage;
+
