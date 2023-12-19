@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
+	"os"
 	"server/invoice"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +23,7 @@ func HandleManualInvoice(c *gin.Context) {
 	err := c.BindJSON(&p)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
+		return
 	}
 
 	var tennant = invoice.Tennant{
@@ -35,9 +39,62 @@ func HandleManualInvoice(c *gin.Context) {
 
 }
 
+func HandleCreateOrder(c *gin.Context) {
+	// get invoice ID
+	// check the status
+	// if status is not complete initiate
+
+	// get session user from this
+	var payload = struct {
+		InvoiceID int `json:"invoiceID"`
+	}{}
+
+	c.BindJSON(&payload)
+
+	dbname := os.Getenv("POSTGES_DB")
+	dbuser := os.Getenv("POSTGRES_USERNAME")
+	dbpassword := os.Getenv("POSTGRES_PASSWORD")
+	dbhost := os.Getenv("POSTGRES_HOST")
+
+	connString := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=require port=5432", dbname, dbuser, dbpassword, dbhost)
+
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	var status string
+	var amount int
+	err = db.QueryRow(`SELECT payment_status, amount FROM invoice WHERE payment_id = $1`, payload.InvoiceID).Scan(&status, &amount)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	if status == "COMPLETED" {
+		c.JSON(400, gin.H{"error": "invoice has already been filled"})
+		return
+	}
+
+	orderID, err := invoice.GeneratePaypalOrder(amount, payload.InvoiceID)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{"response": orderID})
+
+}
+
+func HandleConfirmOrder(c *gin.Context) {
+	// This route is accessed by the page paypal redirects to, confirming the order
+	// need to confirm venmo works the same way
+}
+
 func HandleNewOrderTest(c *gin.Context) {
 
-	orderID, err := invoice.GeneratePaypalOrder(320)
+	orderID, err := invoice.GeneratePaypalOrder(320, 500000)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
