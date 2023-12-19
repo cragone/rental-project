@@ -69,10 +69,6 @@ func main() {
 		tennant.GET("/property_tennants", PropertyTennantIDList)
 	}
 
-	r.NoRoute(func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", nil)
-	})
-
 	// CRON job for setting up invoices
 	s := gocron.NewScheduler(time.UTC)
 	// How often do we run the task?
@@ -84,26 +80,20 @@ func main() {
 
 	fmt.Println("Server Started")
 
-	id, err := invoice.GeneratePaypalOrder(300)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("order id:")
-	fmt.Println(id)
-
-	x, err := invoice.CheckPaypalOrder("2AR53697HY170130S")
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("order status:")
-	fmt.Println(x)
-
-	order := r.Group("/order")
+	order := r.Group("/invoice")
 	{
-		order.GET("/new", handlers.HandleNewOrder)
+		// WHAT WE HAVE RIGHT NOW WILL NOT WORK!!
+		// orders expire so we need a new strategy.
+		// We cant save the order ID so we need to send the invoice ID within the redirect link to track the payment.
+		// Only when the redirect link is triggered we can track the invoice
+		order.GET("/test_new", handlers.HandleNewOrderTest)
 		order.POST("/status", handlers.HandleOrderStatus)
+		order.POST("/manual_invoice", handlers.HandleManualInvoice)
 	}
+
+	r.NoRoute(func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
 
 	r.Run(":80")
 }
