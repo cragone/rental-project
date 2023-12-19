@@ -71,6 +71,7 @@ func pullValidTennants() []Tennant {
 	return validTennants
 }
 
+// make this return errors instead of logging them
 func GenerateInvoices(tennants []Tennant) {
 
 	dbname := os.Getenv("POSTGES_DB")

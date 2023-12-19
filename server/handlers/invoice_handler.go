@@ -1,12 +1,41 @@
 package handlers
 
 import (
+	"fmt"
 	"server/invoice"
 
 	"github.com/gin-gonic/gin"
 )
 
-func HandleNewOrder(c *gin.Context) {
+// invoice will be created with default due date a week from today
+func HandleManualInvoice(c *gin.Context) {
+
+	type payload struct {
+		Rate      int `json:"rate"`
+		TennantID int `json:"tennantID"`
+	}
+
+	var p payload
+
+	err := c.BindJSON(&p)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	}
+
+	var tennant = invoice.Tennant{
+		TennantID: p.TennantID,
+		Rate:      p.Rate,
+	}
+
+	tennants := append([]invoice.Tennant{}, tennant)
+
+	invoice.GenerateInvoices(tennants)
+
+	fmt.Println(tennant)
+
+}
+
+func HandleNewOrderTest(c *gin.Context) {
 
 	orderID, err := invoice.GeneratePaypalOrder(320)
 	if err != nil {
