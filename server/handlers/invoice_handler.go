@@ -87,9 +87,17 @@ func HandleCreateOrder(c *gin.Context) {
 
 }
 
+// This route is accessed by the page paypal redirects to, confirming the order
+// need to confirm venmo works the same way
+// https://developer.paypal.com/docs/api/webhooks/v1/
+//
+// Why tonot do this:
+// https://stackoverflow.com/questions/36221146/paypal-rest-api-fulfill-order-payment-on-redirect-url-or-on-webhook-call
 func HandleConfirmOrder(c *gin.Context) {
-	// This route is accessed by the page paypal redirects to, confirming the order
-	// need to confirm venmo works the same way
+	invoiceID := c.Param("id")
+
+	fmt.Println(invoiceID)
+	c.JSON(200, gin.H{"response": "done"})
 }
 
 func HandleNewOrderTest(c *gin.Context) {
