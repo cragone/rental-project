@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/plutov/paypal/v4"
 )
 
@@ -94,7 +95,8 @@ func GenerateInvoices(tennants []Tennant) {
 
 	for _, tennant := range tennants {
 
-		_, err = tx.Exec("INSERT INTO invoice (due_date, payment_status, tennant_id, amount) VALUES ((CURRENT_DATE - INTERVAL '7 days'), 'CREATED', $1, $2)", tennant.TennantID, tennant.Rate)
+		invoiceID := uuid.NewString()
+		_, err = tx.Exec("INSERT INTO invoice (due_date, payment_status, tennant_id, amount, payment_id) VALUES ((CURRENT_DATE - INTERVAL '7 days'), 'CREATED', $1, $2, $3)", tennant.TennantID, tennant.Rate, invoiceID)
 		if err != nil {
 			tx.Rollback()
 			log.Fatal(err)

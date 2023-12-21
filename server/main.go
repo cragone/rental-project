@@ -89,6 +89,7 @@ func main() {
 		order.GET("/test_new", handlers.HandleNewOrderTest)
 		order.POST("/status", handlers.HandleOrderStatus)
 		order.POST("/manual_invoice", handlers.HandleManualInvoice)
+		order.GET("/confirm", handlers.HandleConfirmOrder)
 	}
 
 	r.NoRoute(func(c *gin.Context) {

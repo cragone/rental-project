@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS invoice, brokie, user_info, property_info;
+DROP TABLE IF EXISTS invoice, brokie, user_info, property_info, session;
 
 CREATE TABLE user_info (
     user_type VARCHAR(255) NOT NULL,
@@ -7,6 +7,11 @@ CREATE TABLE user_info (
     phone VARCHAR(255),
     hash_password VARCHAR(255),
     one_time_code VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE session (
+    email VARCHAR(255) REFERENCES user_info(email),
+    session_token VARCHAR(255) PRIMARY KEY 
 );
 
 CREATE TABLE property_info (
@@ -29,6 +34,6 @@ CREATE TABLE invoice (
     payment_status VARCHAR(255),
     paypal_id VARCHAR(255),
     payment_type VARCHAR(255),
-    payment_id SERIAL PRIMARY KEY,
+    payment_id VARCHAR(255) PRIMARY KEY,
     tennant_id INT REFERENCES brokie(b_id) 
 );
