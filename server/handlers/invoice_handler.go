@@ -80,7 +80,7 @@ func HandleCreateOrder(c *gin.Context) {
 		return
 	}
 
-	if status == "COMPLETED" {
+	if status == "COMPLETE" {
 		c.JSON(400, gin.H{"error": "invoice has already been filled"})
 		return
 	}
@@ -103,6 +103,10 @@ func HandleCreateOrder(c *gin.Context) {
 
 func HandleTakeWebhookResponse(c *gin.Context) {
 
+	// Need to verify the webhook signature so we know if it is legit
+	// If it is legit we can continue to approving the transaction
+	// Need to pull headers from the webhook req
+
 	var payload struct {
 		Resource struct {
 			ID string `json:"id"`
@@ -111,8 +115,7 @@ func HandleTakeWebhookResponse(c *gin.Context) {
 
 	err := c.BindJSON(&payload)
 	if err != nil {
-		fmt.Println("error response")
-		c.JSON(400, gin.H{"error": "issue parsing request"})
+		c.JSON(200, gin.H{"error": "issue parsing request"})
 		return
 	}
 
@@ -127,7 +130,8 @@ func HandleTakeWebhookResponse(c *gin.Context) {
 
 	db, err := sql.Open("postgres", connString)
 	if err != nil {
-		log.Fatal(err)
+		c.JSON(200, gin.H{"error": err.Error()})
+		return
 	}
 	defer db.Close()
 
@@ -135,14 +139,12 @@ func HandleTakeWebhookResponse(c *gin.Context) {
 
 	err = db.QueryRow(`SELECT invoice_id FROM invoice_paypal_lookup WHERE paypal_order_id = $1`, payload.Resource.ID).Scan(&invoiceID)
 	if err != nil {
-		fmt.Println("nothing to update")
 		c.JSON(200, gin.H{"error": err.Error()})
 		return
 	}
 
 	_, err = db.Exec(`UPDATE invoice SET payment_status = 'COMPLETE' WHERE payment_id = $1`, invoiceID)
 	if err != nil {
-		fmt.Println("nothing to update")
 		c.JSON(200, gin.H{"error": err.Error()})
 		return
 	}
