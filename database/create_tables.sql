@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS invoice, brokie, user_info, property_info, session;
+DROP TABLE IF EXISTS invoice, brokie, user_info, property_info, session, invoice_paypal_lookup;
 
 CREATE TABLE user_info (
     user_type VARCHAR(255) NOT NULL,
@@ -32,8 +32,12 @@ CREATE TABLE invoice (
     due_date DATE,
     amount INT,
     payment_status VARCHAR(255),
-    paypal_id VARCHAR(255),
     payment_type VARCHAR(255),
     payment_id VARCHAR(255) PRIMARY KEY,
     tennant_id INT REFERENCES brokie(b_id) 
+);
+
+CREATE TABLE invoice_paypal_lookup(
+    invoice_id VARCHAR(255),
+    paypal_order_id VARCHAR(255)
 );

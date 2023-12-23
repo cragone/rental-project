@@ -72,9 +72,9 @@ func main() {
 	// CRON job for setting up invoices
 	s := gocron.NewScheduler(time.UTC)
 	// How often do we run the task?
-	// In prod
-	s.Every(1).Day().At("2:00").Do(invoice.GenerateAllInvoices)
-	// s.Every(100).Second().Do(invoice.GenerateAllInvoices)
+	// In prod 1 time per day at 2am
+	// 2am in EST is 7am UTC
+	s.Every(1).Day().At("7:00").Do(invoice.GenerateAllInvoices)
 	// start the scheduler
 	s.StartAsync()
 
@@ -87,9 +87,11 @@ func main() {
 		// We cant save the order ID so we need to send the invoice ID within the redirect link to track the payment.
 		// Only when the redirect link is triggered we can track the invoice
 		order.GET("/test_new", handlers.HandleNewOrderTest)
-		order.POST("/status", handlers.HandleOrderStatus)
+
 		order.POST("/manual_invoice", handlers.HandleManualInvoice)
-		order.GET("/confirm", handlers.HandleConfirmOrder)
+		order.POST("/create_order", handlers.HandleCreateOrder)
+
+		order.POST("/webhook", handlers.HandleTakeWebhookResponse)
 	}
 
 	r.NoRoute(func(c *gin.Context) {
