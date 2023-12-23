@@ -45,11 +45,17 @@ func HandleCreateOrder(c *gin.Context) {
 	// if status is not complete initiate
 
 	// get session user from this
-	var payload = struct {
-		InvoiceID int `json:"invoiceID"`
-	}{}
+	type Payload struct {
+		InvoiceID string `json:"invoiceID"`
+	}
 
-	c.BindJSON(&payload)
+	var payload Payload
+
+	err := c.BindJSON(&payload)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
 
 	dbname := os.Getenv("POSTGES_DB")
 	dbuser := os.Getenv("POSTGRES_USERNAME")
@@ -68,6 +74,8 @@ func HandleCreateOrder(c *gin.Context) {
 	var amount int
 	err = db.QueryRow(`SELECT payment_status, amount FROM invoice WHERE payment_id = $1`, payload.InvoiceID).Scan(&status, &amount)
 	if err != nil {
+		fmt.Println("test")
+		fmt.Println(payload.InvoiceID)
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
@@ -83,8 +91,63 @@ func HandleCreateOrder(c *gin.Context) {
 		return
 	}
 
+	_, err = db.Exec(`INSERT INTO invoice_paypal_lookup (invoice_id, paypal_order_id) VALUES ($1, $2)`, payload.InvoiceID, orderID)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(200, gin.H{"response": orderID})
 
+}
+
+func HandleTakeWebhookResponse(c *gin.Context) {
+
+	var payload struct {
+		Resource struct {
+			ID string `json:"id"`
+		} `json:"resource"`
+	}
+
+	err := c.BindJSON(&payload)
+	if err != nil {
+		fmt.Println("error response")
+		c.JSON(400, gin.H{"error": "issue parsing request"})
+		return
+	}
+
+	fmt.Println(payload.Resource.ID)
+
+	dbname := os.Getenv("POSTGES_DB")
+	dbuser := os.Getenv("POSTGRES_USERNAME")
+	dbpassword := os.Getenv("POSTGRES_PASSWORD")
+	dbhost := os.Getenv("POSTGRES_HOST")
+
+	connString := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=require port=5432", dbname, dbuser, dbpassword, dbhost)
+
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	var invoiceID string
+
+	err = db.QueryRow(`SELECT invoice_id FROM invoice_paypal_lookup WHERE paypal_order_id = $1`, payload.Resource.ID).Scan(&invoiceID)
+	if err != nil {
+		fmt.Println("nothing to update")
+		c.JSON(200, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err = db.Exec(`UPDATE invoice SET payment_status = 'COMPLETE' WHERE payment_id = $1`, invoiceID)
+	if err != nil {
+		fmt.Println("nothing to update")
+		c.JSON(200, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{"response": payload.Resource.ID})
 }
 
 // This route is accessed by the page paypal redirects to, confirming the order
@@ -102,7 +165,7 @@ func HandleConfirmOrder(c *gin.Context) {
 
 func HandleNewOrderTest(c *gin.Context) {
 
-	orderID, err := invoice.GeneratePaypalOrder(320, 500000)
+	orderID, err := invoice.GeneratePaypalOrder(320, "sdnkfnseongosennke")
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return

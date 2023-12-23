@@ -12,12 +12,15 @@ const PaymentTest = () => {
     // Check order stats and if not filled get the id:
 
     const newOrder = () => {
-
-        axios.get(`http://localhost/order/new`).then((response) => {
+        const payload = {
+            invoiceID: "b8a2572c-f026-474c-bf3b-9cbe71ad5880"
+        }
+        axios.post(`http://localhost/invoice/create_order`, payload).then((response) => {
             console.log(response.data.response)
             setOrder(response.data.response)
         }).catch((error) => {
             console.log("error")
+            console.log(error.response.data.error)
         })
     }
 

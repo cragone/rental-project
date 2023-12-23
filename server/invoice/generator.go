@@ -121,7 +121,7 @@ type TokenResponse struct {
 	Nonce       string `json:"nonce"`
 }
 
-func GeneratePaypalOrder(amount int, invoiceID int) (string, error) {
+func GeneratePaypalOrder(amount int, invoiceID string) (string, error) {
 
 	// Prepare the request body using environment variables
 	// orderIntent := "CAPTURE"
@@ -156,7 +156,7 @@ func GeneratePaypalOrder(amount int, invoiceID int) (string, error) {
 		"payment_source": {
 			"paypal": {
 				"experience_context": {
-					"return_url": "https://test.com?id=%d"
+					"return_url": "https://test.com?id=%s"
 				}
 			}
 		}
