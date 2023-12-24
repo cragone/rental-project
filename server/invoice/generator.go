@@ -156,7 +156,7 @@ func GeneratePaypalOrder(amount int, invoiceID string) (string, error) {
 		"payment_source": {
 			"paypal": {
 				"experience_context": {
-					"return_url": "https://test.com?id=%s"
+					"return_url": "https://google.com?id=%s"
 				}
 			}
 		}

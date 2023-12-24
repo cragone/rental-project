@@ -1,13 +1,20 @@
 package handlers
 
 import (
+	"bytes"
+	"context"
 	"database/sql"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"server/invoice"
 
 	"github.com/gin-gonic/gin"
+	"github.com/plutov/paypal/v4"
 )
 
 // invoice will be created with default due date a week from today
@@ -103,9 +110,24 @@ func HandleCreateOrder(c *gin.Context) {
 
 func HandleTakeWebhookResponse(c *gin.Context) {
 
-	// Need to verify the webhook signature so we know if it is legit
-	// If it is legit we can continue to approving the transaction
-	// Need to pull headers from the webhook req
+	// read the json body into a string
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		fmt.Println("Error reading request body")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error reading request body"})
+		return
+	}
+
+	// This is the only situation where we would potentially send a 400
+	// verify the webhook signiature
+	err = verifyWebhookSignature(c, body)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Roll back the body read
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	var payload struct {
 		Resource struct {
@@ -113,7 +135,7 @@ func HandleTakeWebhookResponse(c *gin.Context) {
 		} `json:"resource"`
 	}
 
-	err := c.BindJSON(&payload)
+	err = c.BindJSON(&payload)
 	if err != nil {
 		c.JSON(200, gin.H{"error": "issue parsing request"})
 		return
@@ -152,11 +174,88 @@ func HandleTakeWebhookResponse(c *gin.Context) {
 	c.JSON(200, gin.H{"response": payload.Resource.ID})
 }
 
+// This verifies the webhook with the server to stop bad actors.
+// Must have correct PAYPAL_WEBHOOK_ID corresponding to the webook
+func verifyWebhookSignature(c *gin.Context, body []byte) error {
+	// Get the signature-related headers from the request headers
+	transmissionID := c.GetHeader("Paypal-Transmission-Id")
+	transmissionSignature := c.GetHeader("Paypal-Transmission-Sig")
+	transmissionTime := c.GetHeader("Paypal-Transmission-Time")
+	certURL := c.GetHeader("Paypal-Cert-Url")
+
+	verifyPayload := fmt.Sprintf(`{
+		"transmission_id": "%s",
+		"transmission_time": "%s",
+		"cert_url": "%s",
+		"auth_algo": "SHA256withRSA",
+		"transmission_sig": "%s",
+		"webhook_id": "%s",
+		"webhook_event": %s
+	  }`, transmissionID, transmissionTime, certURL, transmissionSignature, os.Getenv("PAYPAL_WEBHOOK_ID"), string(body))
+
+	req, err := http.NewRequest(
+		"POST",
+		fmt.Sprintf("%s/v1/notifications/verify-webhook-signature", os.Getenv("PAYPAL_BASE_URL")),
+		bytes.NewBufferString(verifyPayload),
+	)
+	if err != nil {
+		return fmt.Errorf("Error creating HTTP request: %v", err)
+	}
+
+	clientID := os.Getenv("PAYPAL_CLIENT_ID")
+	secret := os.Getenv("PAYPAL_SECRET")
+
+	apiURL := os.Getenv("PAYPAL_BASE_URL")
+
+	// Create a client instance
+	client, err := paypal.NewClient(clientID, secret, apiURL)
+	if err != nil {
+		return fmt.Errorf("Error creating HTTP request: %v", err)
+	}
+	client.SetLog(os.Stdout) // Set log to terminal stdout
+
+	accessToken, err := client.GetAccessToken(context.Background())
+	if err != nil {
+		return fmt.Errorf("Error creating HTTP request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+accessToken.Token)
+
+	httpClient := &http.Client{}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	buf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	verificationStatus := struct {
+		Status string `json:"verification_status"`
+	}{}
+
+	err = json.Unmarshal(buf, &verificationStatus)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(verificationStatus.Status)
+	if verificationStatus.Status != "SUCCESS" {
+		return errors.New("could not confirm the webhook")
+	}
+
+	return nil
+}
+
 // This route is accessed by the page paypal redirects to, confirming the order
 // need to confirm venmo works the same way
 // https://developer.paypal.com/docs/api/webhooks/v1/
 //
-// Why tonot do this:
+// Why to not do this:
 // https://stackoverflow.com/questions/36221146/paypal-rest-api-fulfill-order-payment-on-redirect-url-or-on-webhook-call
 func HandleConfirmOrder(c *gin.Context) {
 	invoiceID := c.Param("id")
