@@ -1,94 +1,14 @@
 {
-    "id": "WH-4JJ38798U4416442L-3N822878RV307215X",
-    "event_version": "1.0",
-    "create_time": "2023-12-23T17:37:21.926Z",
-    "resource_type": "checkout-order",
-    "resource_version": "2.0",
-    "event_type": "CHECKOUT.ORDER.APPROVED",
-    "summary": "An order has been approved by buyer",
-    "resource": {
-        "create_time": "2023-12-23T17:37:11Z",
-        "purchase_units": [
-            {
-                "reference_id": "default",
-                "amount": {
-                    "currency_code": "USD",
-                    "value": "450.00"
-                },
-                "payee": {
-                    "email_address": "sb-hfvk928246308@business.example.com",
-                    "merchant_id": "QGYAJYWF729L4"
-                },
-                "shipping": {
-                    "name": {
-                        "full_name": "John Doe"
-                    },
-                    "address": {
-                        "address_line_1": "1 Main St",
-                        "admin_area_2": "San Jose",
-                        "admin_area_1": "CA",
-                        "postal_code": "95131",
-                        "country_code": "US"
-                    }
-                }
-            }
-        ],
-        "links": [
-            {
-                "href": "https://api.sandbox.paypal.com/v2/checkout/orders/6YX612028F027782E",
-                "rel": "self",
-                "method": "GET"
-            },
-            {
-                "href": "https://api.sandbox.paypal.com/v2/checkout/orders/6YX612028F027782E",
-                "rel": "update",
-                "method": "PATCH"
-            },
-            {
-                "href": "https://api.sandbox.paypal.com/v2/checkout/orders/6YX612028F027782E/capture",
-                "rel": "capture",
-                "method": "POST"
-            }
-        ],
-        "id": "6YX612028F027782E",
-        "payment_source": {
-            "paypal": {
-                "email_address": "sb-ghujx28246306@personal.example.com",
-                "account_id": "3WQS5UDAAAQA2",
-                "account_status": "VERIFIED",
-                "name": {
-                    "given_name": "John",
-                    "surname": "Doe"
-                },
-                "address": {
-                    "country_code": "US"
-                }
-            }
-        },
-        "intent": "CAPTURE",
-        "payer": {
-            "name": {
-                "given_name": "John",
-                "surname": "Doe"
-            },
-            "email_address": "sb-ghujx28246306@personal.example.com",
-            "payer_id": "3WQS5UDAAAQA2",
-            "address": {
-                "country_code": "US"
-            }
-        },
-        "status": "APPROVED"
-    },
-    "links": [
+    "name": "INVALID_REQUEST",
+    "message": "Request is not well-formed, syntactically incorrect, or violates schema.",
+    "debug_id": "af70aa79226d2",
+    "details": [
         {
-            "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-4JJ38798U4416442L-3N822878RV307215X",
-            "rel": "self",
-            "method": "GET"
-        },
-        {
-            "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-4JJ38798U4416442L-3N822878RV307215X/resend",
-            "rel": "resend",
-            "method": "POST"
+            "field": "/webhook_id",
+            "value": "your_webhook_id",
+            "location": "body",
+            "issue": "must match \"^[a-zA-Z0-9]+$\""
         }
-    ]
+    ],
+    "links": []
 }

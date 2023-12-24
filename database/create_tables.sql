@@ -31,7 +31,7 @@ CREATE TABLE brokie (
 CREATE TABLE invoice (
     due_date DATE,
     amount INT,
-    -- pending BOOLEAN default false,   // possibly add ad some pointto buffer while we wait for a webhook to trigger
+    pending BOOLEAN default false,
     payment_status VARCHAR(255),
     payment_type VARCHAR(255),
     payment_id VARCHAR(255) PRIMARY KEY,
