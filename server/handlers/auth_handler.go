@@ -85,6 +85,12 @@ func ValidateGoogleHandshake(c *gin.Context) {
 		Code string `json:"code"`
 	}{}
 
+	err := c.BindJSON(&payload)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
 	clientID := os.Getenv("CLIENT_ID")
 	clientSecret := os.Getenv("CLIENT_SECRET")
 	redirectURI := os.Getenv("REDIRECT_URI")
