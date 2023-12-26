@@ -48,7 +48,10 @@ func main() {
 	r.Static("/assets", "./assets")
 
 	auth := r.Group("/auth")
-	auth.POST("/login", func(c *gin.Context) { fmt.Println("login route triggered") })
+	{
+		auth.POST("/login", func(c *gin.Context) { fmt.Println("login route triggered") })
+		auth.GET("/google_uri", handlers.GenerateGoogleAuthURI)
+	}
 
 	admin := r.Group("/admin")
 	admin.Use(middleware.RequiresAdmin)
