@@ -19,7 +19,7 @@ const LoginPage = () => {
     if (code != null){
       console.log("post code")
       axios.post(urlRoot+'/auth/google_session_handshake',{code:code}).then((response)=>{
-        console.log(response)
+        console.log(response.data.response)
       }).catch((error)=>{
         console.log(error)
       })
