@@ -32,6 +32,17 @@ func ProvisionAccount(c *gin.Context) {
 		return
 	}
 
+	err = CreateAccount(payload.Email, payload.Name)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{"response": "create new user in system"})
+
+}
+
+func CreateAccount(email string, name string) error {
 	dbname := os.Getenv("POSTGES_DB")
 	dbuser := os.Getenv("POSTGRES_USERNAME")
 	dbpassword := os.Getenv("POSTGRES_PASSWORD")
@@ -41,30 +52,25 @@ func ProvisionAccount(c *gin.Context) {
 
 	db, err := sql.Open("postgres", connString)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
+		return err
 	}
 	defer db.Close()
 
-	res, err := db.Exec(`INSERT INTO user_info (user_type, full_name, email, one_time_code) VALUES ('user', $1, $2, 'google_auth')`, payload.Name, payload.Email)
+	res, err := db.Exec(`INSERT INTO user_info (user_type, full_name, email, one_time_code) VALUES ('user', $1, $2, 'google_auth')`, name, email)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
+		return err
 	}
 
 	n, err := res.RowsAffected()
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
+		return err
 	}
 
 	if n == 0 {
-		c.JSON(400, gin.H{"error": "user already exists in system with that email"})
-		return
+		return err
 	}
 
-	c.JSON(200, gin.H{"response": "create new user in system"})
-
+	return nil
 }
 
 func GenerateGoogleAuthURI(c *gin.Context) {
@@ -138,20 +144,20 @@ func ValidateGoogleHandshake(c *gin.Context) {
 		return
 	}
 
-	name, email, err := getGoogleInfo(response.AccessToken)
+	email, name, err := getGoogleInfo(response.AccessToken)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	fmt.Println(email)
 	sessionToken, err := CreateSession(email)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": "contact administrator for account"})
 		return
 	}
+	fmt.Println(sessionToken)
 
-	c.SetCookie("session_token", sessionToken, 100000, "/", "http://localhost:5173", true, true)
+	c.SetCookie("session_token", sessionToken, 100000, "/", "localhost", false, true)
 
 	c.JSON(200, gin.H{"response": name})
 
@@ -213,8 +219,8 @@ func CreateSession(email string) (SessionToken string, Error error) {
 	defer db.Close()
 
 	_, err = db.Exec(`
-		INSERT INTO session (email, session_token) VALUES ($1, $2)
-		ON CONFLICT ON CONSTRAINT session_pkey DO UPDATE SET session_token = $2
+	INSERT INTO session (email, session_token) VALUES ($1, $2)
+	ON CONFLICT (email) DO UPDATE SET session_token = $2
 	`, email, sessionToken)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -223,4 +229,42 @@ func CreateSession(email string) (SessionToken string, Error error) {
 
 	return sessionToken, nil
 
+}
+
+func GetSession(c *gin.Context) {
+
+	token, err := c.Cookie("session_token")
+	if err != nil {
+		c.JSON(400, gin.H{"error": "invalid token"})
+		return
+	}
+
+	fmt.Println(token)
+
+	dbname := os.Getenv("POSTGES_DB")
+	dbuser := os.Getenv("POSTGRES_USERNAME")
+	dbpassword := os.Getenv("POSTGRES_PASSWORD")
+	dbhost := os.Getenv("POSTGRES_HOST")
+
+	connString := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=require port=5432", dbname, dbuser, dbpassword, dbhost)
+
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	defer db.Close()
+
+	var email string
+
+	err = db.QueryRow(`SELECT email FROM session WHERE session_token = $1`, token).Scan(&email)
+	if err != nil {
+		fmt.Println(err.Error())
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	fmt.Println(email)
+
+	c.JSON(200, gin.H{"response": "valid"})
 }

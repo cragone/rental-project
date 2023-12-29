@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, TextField, Button, Paper, Box } from '@mui/material';
+import { Container, Typography, TextField, Button, Paper, Box, Grid } from '@mui/material';
 import axios from 'axios'
+import GoogleButton from 'react-google-button'
 
+axios.defaults.withCredentials = true;
 
 const LoginPage = () => {
   const navigate = useNavigate();
-
+  
   const [urlRoot, setUrlRoot] = useState("http://localhost")
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -15,16 +17,16 @@ const LoginPage = () => {
   const queryParams = new URLSearchParams(location.search);
   const [code, setCode] = useState(queryParams.get('code'));
 
-  useEffect(()=>{
-    if (code != null){
+  useEffect(() => {
+    if (code != null) {
       console.log("post code")
-      axios.post(urlRoot+'/auth/google_session_handshake',{code:code}).then((response)=>{
-        console.log(response.data.response)
-      }).catch((error)=>{
-        console.log(error)
-      })
+      axios.post(urlRoot + '/auth/google_session_handshake',{ code: code }).then((response) => {
+          console.log(response.data.response)
+        }).catch((error) => {
+          console.log(error)
+        })
     }
-  },[code])
+  }, [code])
 
   const houseImage = '"https://th.bing.com/th/id/R.a1d4a6f8ba9cf40bbe69c6e47546e8a3?rik=dgUZMgnDeoL7Dw&riu=http%3a%2f%2fwww.luxxu.net%2fblog%2fwp-content%2fuploads%2f2017%2f02%2f20-Incredible-Modern-Houses-Around-the-United-States-5.jpg&ehk=jltOlopAEXlYw25Qjcb6BhHSadJcIyJ863PI4ffrO70%3d&risl=1&pid=ImgRaw&r=0'; // Replace with your image URL
 
@@ -39,10 +41,10 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    axios.get(urlRoot+'/auth/google_uri').then((response)=>{
+    axios.get(urlRoot + '/auth/google_uri').then((response) => {
       console.log(response.data.response)
-      window.location.href =response.data.response
-    }).catch((error)=>{
+      window.location.href = response.data.response
+    }).catch((error) => {
       console.log(error.response.data.error)
     })
   }
@@ -97,15 +99,13 @@ const LoginPage = () => {
           Login
         </Button>
 
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={handleGoogleLogin}
-          sx={{ marginBottom: '10px' }}
-        >
-          Login with Google
-        </Button>
+
+        <Grid container justifyContent="center" spacing={5}>
+          <Grid item>
+            <GoogleButton onClick={handleGoogleLogin} />
+          </Grid>
+        </Grid>
+
         {error && <Typography variant="body2" color="error" align="center">{error}</Typography>}
       </Box>
     </Box>
