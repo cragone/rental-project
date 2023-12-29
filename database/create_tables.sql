@@ -10,8 +10,8 @@ CREATE TABLE user_info (
 );
 
 CREATE TABLE session (
-    email VARCHAR(255) REFERENCES user_info(email),
-    session_token VARCHAR(255) PRIMARY KEY 
+    email VARCHAR(255) PRIMARY KEY REFERENCES user_info(email),
+    session_token VARCHAR(255)
 );
 
 CREATE TABLE property_info (
