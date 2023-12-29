@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func RegisterUser(c *gin.Context) {
@@ -127,18 +128,99 @@ func ValidateGoogleHandshake(c *gin.Context) {
 		return
 	}
 
-	type body struct {
-		ID string `json:"access_token"`
-	}
+	var response = struct {
+		AccessToken string `json:"access_token"`
+	}{}
 
-	var accessToken body
-
-	err = json.Unmarshal(buf, &accessToken)
+	err = json.Unmarshal(buf, &response)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, gin.H{"response": accessToken})
+	name, email, err := getGoogleInfo(response.AccessToken)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	fmt.Println(email)
+	sessionToken, err := CreateSession(email)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.SetCookie("session_token", sessionToken, 100000, "/", "http://localhost:5173", true, true)
+
+	c.JSON(200, gin.H{"response": name})
+
+}
+
+func getGoogleInfo(accessToken string) (Email string, Name string, Error error) {
+	uri := "https://www.googleapis.com/oauth2/v2/userinfo"
+
+	req, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return "", "", err
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", "", err
+	}
+
+	defer resp.Body.Close()
+
+	buf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", "", err
+	}
+
+	var response = struct {
+		Email string `json:"email"`
+		Name  string `json:"name"`
+	}{}
+
+	err = json.Unmarshal(buf, &response)
+	if err != nil {
+		return "", "", err
+	}
+
+	return response.Email, response.Name, nil
+}
+
+func CreateSession(email string) (SessionToken string, Error error) {
+
+	// create a new session token
+	sessionToken := uuid.NewString()
+
+	dbname := os.Getenv("POSTGES_DB")
+	dbuser := os.Getenv("POSTGRES_USERNAME")
+	dbpassword := os.Getenv("POSTGRES_PASSWORD")
+	dbhost := os.Getenv("POSTGRES_HOST")
+
+	connString := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=require port=5432", dbname, dbuser, dbpassword, dbhost)
+
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		return "", err
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`
+		INSERT INTO session (email, session_token) VALUES ($1, $2)
+		ON CONFLICT ON CONSTRAINT session_pkey DO UPDATE SET session_token = $2
+	`, email, sessionToken)
+	if err != nil {
+		fmt.Println(err.Error())
+		return "", err
+	}
+
+	return sessionToken, nil
 
 }
