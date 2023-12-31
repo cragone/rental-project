@@ -14,17 +14,23 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const [googleDisabled, setGoogleDisabled] = useState(true);
+
   const queryParams = new URLSearchParams(location.search);
   const [code, setCode] = useState(queryParams.get('code'));
 
   useEffect(() => {
     if (code != null) {
-      console.log("post code")
+      setGoogleDisabled(true)
       axios.post(urlRoot + '/auth/google_session_handshake',{ code: code }).then((response) => {
-          console.log(response.data.response)
+          setGoogleDisabled(false)
+          navigate("/home")
         }).catch((error) => {
-          console.log(error)
+          setGoogleDisabled(false)
         })
+    }
+    else{
+      setGoogleDisabled(false)
     }
   }, [code])
 
@@ -102,7 +108,9 @@ const LoginPage = () => {
 
         <Grid container justifyContent="center" spacing={5}>
           <Grid item>
-            <GoogleButton onClick={handleGoogleLogin} />
+            <GoogleButton 
+            disabled={googleDisabled}
+            onClick={handleGoogleLogin} />
           </Grid>
         </Grid>
 

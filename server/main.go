@@ -52,6 +52,7 @@ func main() {
 		auth.POST("/login", func(c *gin.Context) { fmt.Println("login route triggered") })
 		auth.GET("/google_uri", handlers.GenerateGoogleAuthURI)
 		auth.POST("/google_session_handshake", handlers.ValidateGoogleHandshake)
+		auth.GET("/session", handlers.GetSession)
 	}
 
 	admin := r.Group("/admin")
