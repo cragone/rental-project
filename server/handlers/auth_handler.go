@@ -266,5 +266,5 @@ func GetSession(c *gin.Context) {
 
 	fmt.Println(email)
 
-	c.JSON(200, gin.H{"response": "valid"})
+	c.JSON(200, gin.H{"response": email})
 }
