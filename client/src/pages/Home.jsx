@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Typography, Button, Grid } from '@mui/material';
+import { useSession } from '../hooks/AuthHooks';
 
 const Home = () => {
+    const {user} = useSession()
+    
   return (
     <Container maxWidth="xl" sx={{ textAlign: 'center', mt: 4 }}>
       <Typography variant="h3" gutterBottom>

@@ -20,3 +20,5 @@ const useSession = () => {
 
     return user
 }
+
+export {useSession}
