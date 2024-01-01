@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Container, Typography, TextField, Button } from '@mui/material';
+import { useSession } from '../hooks/AuthHooks';
 
 const SubmitProblemPage = () => {
+  const {user} = useSession()
   const [problem, setProblem] = useState('');
 
   const handleSubmitProblem = async () => {

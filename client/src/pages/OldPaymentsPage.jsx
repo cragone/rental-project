@@ -1,8 +1,10 @@
 import React from 'react';
 import { Container, Typography, Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Paper } from '@mui/material';
-
+import { useSession } from '../hooks/AuthHooks';
 
 const OldPaymentsPage = () => {
+
+  const {user} = useSession()
   // Simulated old payment data (you might fetch this from an API)
   const oldPayments = [
     { id: 1, month: 'January', rent: 1000, utilities: 150 },

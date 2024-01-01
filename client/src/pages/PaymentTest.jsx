@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { useSession } from '../hooks/AuthHooks';
 
 const PaymentTest = () => {
+    const {user} = useSession()
 
     const [api, setApi] = useState(import.meta.env.VITE_API_PATH)
 

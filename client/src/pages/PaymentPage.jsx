@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Container, Typography, Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Button, Box, useMediaQuery } from '@mui/material';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-
+import { useSession } from '../hooks/AuthHooks';
 
 const PaymentPage = () => {
+  const {user} = useSession()
   const [amountsDue, setAmountsDue] = useState([]);
   const [address, setAddress] = useState('');
 

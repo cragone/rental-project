@@ -9,8 +9,15 @@ import {
   Modal,
   Box,
 } from '@mui/material';
+import { useSession } from '../hooks/AuthHooks';
+import axios from 'axios';
+import { usePropertyList, usePropertyTennantList } from '../hooks/PropertyTennantHooks';
+
 //still needs way to handle updating information
 const RentalManagementPage = () => {
+  const { user } = useSession()
+  const { propertyInfo } = usePropertyList()
+  const { tennantList } = usePropertyTennantList(1)
   const [selectedRental, setSelectedRental] = useState(null);
   const [openChart, setOpenChart] = useState(false);
   const [rentals, setRentals] = useState([]);
@@ -18,6 +25,8 @@ const RentalManagementPage = () => {
   // Switch to pull renter information from api
   useEffect(() => {
     // Simulated data for demonstration purposes
+
+    axios
     const simulatedRentalData = [
       {
         id: 1,
@@ -141,5 +150,32 @@ const RentalManagementPage = () => {
     </Container>
   );
 };
+
+
+const PropertyInstance = (props) => {
+  
+  
+  
+  return(
+  <ListItem key={props.id}>
+    <ListItemText
+      primary={props.address}
+      secondary={`Tenants: ${rental.tenants.join(
+        ', '
+      )}, Price: $${rental.price}`}
+    />
+    <Button
+      variant="contained"
+      color="primary"
+      onClick={() => {
+        setSelectedRental(rental.address);
+        handleOpenChart();
+      }}
+    >
+      Details
+    </Button>
+  </ListItem>
+  )
+}
 
 export default RentalManagementPage;
