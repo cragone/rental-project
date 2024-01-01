@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Paper } from '@mui/material';
 
+import { useSession } from '../hooks/AuthHooks';
+
 const OldPaymentsPage = () => {
-  const [oldPayments, setOldPayments] = useState([]);
+
+  const {user} = useSession()
+  // Simulated old payment data (you might fetch this from an API)
+  const oldPayments = [
+    { id: 1, month: 'January', rent: 1000, utilities: 150 },
+    { id: 2, month: 'February', rent: 1000, utilities: 160 },
+    { id: 3, month: 'March', rent: 1050, utilities: 170 },
+    // Add more old payment objects as needed
+  ];
+
 
   // Simulated old payment data (you might fetch this from an API)
   useEffect(() => {

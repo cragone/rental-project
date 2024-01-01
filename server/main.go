@@ -71,7 +71,7 @@ func main() {
 	{
 		tennant.POST("/create", handlers.CreateTennant)
 		tennant.GET("/get", handlers.GetTennant)
-		tennant.GET("/property_tennants", PropertyTennantIDList)
+		tennant.POST("/property_tennants", PropertyTennantIDList)
 	}
 
 	// CRON job for setting up invoices
@@ -272,6 +272,6 @@ func PropertyTennantIDList(c *gin.Context) {
 
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{"response": tennantIDs})
+	c.JSON(200, gin.H{"response": tennantIDs})
 
 }

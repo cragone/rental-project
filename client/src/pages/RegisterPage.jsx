@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Container, Typography, TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-
+import { useSession } from '../hooks/AuthHooks';
 
 const RegisterPage = () => {
+  const {user} = useSession()
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
