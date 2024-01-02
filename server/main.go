@@ -70,7 +70,7 @@ func main() {
 	tennant := r.Group("/tennant")
 	{
 		tennant.POST("/create", handlers.CreateTennant)
-		tennant.GET("/get", handlers.GetTennant)
+		tennant.POST("/get", handlers.GetTennant)
 		tennant.POST("/property_tennants", PropertyTennantIDList)
 	}
 

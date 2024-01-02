@@ -7,10 +7,8 @@ const usePropertyList = () => {
 
     const [urlRoot, setUrlRoot] = useState("http://localhost")
     const [propertyInfo, setPropertyInfo] = useState([])
-
     useEffect(()=>{
         axios.get(urlRoot+"/property/list").then((response)=>{
-            console.log(response.data.propertyList)
             setPropertyInfo(response.data.propertyList)
         }).catch((error)=>{
         })
@@ -28,7 +26,6 @@ const usePropertyTennantList = (props) =>{
             propertyID: props
         }
         axios.post(urlRoot+"/tennant/property_tennants", payload).then((response)=>{
-            console.log(response.data.response)
             setTennantList(response.data.response)
         }).catch((error)=>{
         })
@@ -37,4 +34,20 @@ const usePropertyTennantList = (props) =>{
     return tennantList
 }
 
-export {usePropertyList, usePropertyTennantList}
+const tennantInfo = (props) => {
+    const urlRoot = "http://localhost"
+
+
+    const payload = {
+        tennantID: props
+    }
+    const value = axios.post(urlRoot+"/tennant/get", payload).then((response)=>{
+        return (response.data.tennant)
+    }).catch((error)=>{
+        return null
+    })
+
+    return value
+}
+
+export {usePropertyList, usePropertyTennantList, tennantInfo}
