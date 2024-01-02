@@ -11,42 +11,61 @@ import {
 } from '@mui/material';
 import { useSession } from '../hooks/AuthHooks';
 import axios from 'axios';
-import { usePropertyList, usePropertyTennantList } from '../hooks/PropertyTennantHooks';
+import { tennantInfo, usePropertyList, usePropertyTennantList } from '../hooks/PropertyTennantHooks';
 
 //still needs way to handle updating information
 const RentalManagementPage = () => {
   const { user } = useSession()
-  const { propertyInfo } = usePropertyList()
-  const { tennantList } = usePropertyTennantList(1)
+  const propertyInfo = usePropertyList()
+  const tennantList = usePropertyTennantList(1)
   const [selectedRental, setSelectedRental] = useState(null);
-  const [openChart, setOpenChart] = useState(false);
   const [rentals, setRentals] = useState([]);
 
-  // Switch to pull renter information from api
+
+
+  return (
+    <Container maxWidth="md" sx={{ textAlign: 'center', mt: 4 }}>
+      <Typography variant="h3" gutterBottom>
+        Rental Management
+      </Typography>
+
+      <List>
+        {propertyInfo.map((value, index) => (
+          <PropertyInstance index={index} setSelectedRental={setSelectedRental} key={value.id} value={value} />
+        ))}
+
+      </List>
+
+
+    </Container>
+  );
+};
+
+
+const PropertyInstance = (props) => {
+
+  const [openChart, setOpenChart] = useState(false);
+
+  const { value, setSelectedRental, index } = props
+
+  const tennantList = usePropertyTennantList(value.id)
+
+  const [tennantData, setTennantData] = useState([])
+
   useEffect(() => {
-    // Simulated data for demonstration purposes
 
-    axios
-    const simulatedRentalData = [
-      {
-        id: 1,
-        address: '1st Floor, 490 Yates St',
-        roomsAvailable: 3,
-        tenants: ['Empty'],
-        price: 1500,
-      },
-      {
-        id: 2,
-        address: '2nd Floor, 490 Yates ST',
-        roomsAvailable: 0,
-        tenants: ['Peter Wagner', 'Hassan Albany', 'Christopher Bertola'],
-        price: 1500,
-      },
-      // Add more rental objects as needed
-    ];
+    const promises = tennantList.map((value) => tennantInfo(value))
+    Promise.all(promises)
+      .then(results => {
+        setTennantData(results);
+      })
+      .catch(error => {
+        console.error("Error in fetching tennant data:", error);
+      });
 
-    setRentals(simulatedRentalData);
-  }, []);
+  }, [tennantList]);
+
+  useEffect(() => { console.log(tennantData) }, [tennantData])
 
   const handleOpenChart = () => {
     setOpenChart(true);
@@ -63,33 +82,25 @@ const RentalManagementPage = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ textAlign: 'center', mt: 4 }}>
-      <Typography variant="h3" gutterBottom>
-        Rental Management
-      </Typography>
+    <>
+      <ListItem key={value.id}>
+        <ListItemText
+          primary={value.address}
+          secondary={"Rental property"}
 
-      <List>
-        {rentals.map((rental) => (
-          <ListItem key={rental.id}>
-            <ListItemText
-              primary={rental.address}
-              secondary={`Rooms available: ${rental.roomsAvailable}, Tenants: ${rental.tenants.join(
-                ', '
-              )}, Price: $${rental.price}`}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                setSelectedRental(rental.address);
-                handleOpenChart();
-              }}
-            >
-              Details
-            </Button>
-          </ListItem>
-        ))}
-      </List>
+        />
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            handleOpenChart();
+          }}
+        >
+          Details
+
+        </Button>
+      </ListItem>
 
       <Modal
         open={openChart}
@@ -120,23 +131,21 @@ const RentalManagementPage = () => {
               </tr>
             </thead>
             <tbody>
-              {selectedRental &&
-                rentals.map((rental) => {
-                  if (rental.address === selectedRental) {
-                    return rental.tenants.map((tenant, index) => (
+             
+                  
+                    {tennantData.map((value, index) => (
                       <tr key={index}>
-                        <td>{tenant}</td>
-                        <td>${rental.price}</td>
+                        <td>{value.email}</td>
+                        <td>{value.activeStatus}</td>
                         <td>
                           <Button variant="outlined" color="secondary">
                             Remove
                           </Button>
                         </td>
                       </tr>
-                    ));
-                  }
-                  return null;
-                })}
+                    ))}
+                  
+                  
             </tbody>
           </table>
           <Button variant="contained" onClick={handleEdit}>
@@ -147,34 +156,7 @@ const RentalManagementPage = () => {
           </Button>
         </Box>
       </Modal>
-    </Container>
-  );
-};
-
-
-const PropertyInstance = (props) => {
-  
-  
-  
-  return(
-  <ListItem key={props.id}>
-    <ListItemText
-      primary={props.address}
-      secondary={`Tenants: ${rental.tenants.join(
-        ', '
-      )}, Price: $${rental.price}`}
-    />
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={() => {
-        setSelectedRental(rental.address);
-        handleOpenChart();
-      }}
-    >
-      Details
-    </Button>
-  </ListItem>
+    </>
   )
 }
 
