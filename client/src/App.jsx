@@ -9,6 +9,7 @@ import OldPaymentsPage from './pages/OldPaymentsPage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import PaymentTest from './pages/PaymentTest';
+import PaymentConfirmed from './pages/PaymentConfirmed';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/old-payments" element={<OldPaymentsPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/payment-test" element={<PaymentTest />} />
+        <Route path="/payment-confirmed/" element={<PaymentConfirmed />} />
         {/* Add more routes for other pages if needed */}
       </Routes>
     </Router>
