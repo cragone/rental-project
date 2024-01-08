@@ -6,7 +6,8 @@ CREATE TABLE user_info (
     email VARCHAR(255) PRIMARY KEY,
     phone VARCHAR(255),
     hash_password VARCHAR(255),
-    one_time_code VARCHAR(255) NOT NULL
+    one_time_code VARCHAR(255) NOT NULL,
+    is_admin BOOLEAN DEFAULT false
 );
 
 CREATE TABLE session (

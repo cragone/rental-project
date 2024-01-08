@@ -17,6 +17,59 @@ func RegisterUser(c *gin.Context) {
 	fmt.Println("hello")
 }
 
+func HandleGetAccessLevel(c *gin.Context) {
+	sessionToken := c.GetString("session_token")
+
+	if sessionToken == "" {
+		c.JSON(400, gin.H{"error": "could not get valid session token"})
+		return
+	}
+
+	err, accessLevel := GetAccessLevel(sessionToken)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "invalid"})
+		return
+	}
+
+	c.JSON(200, gin.H{"response": accessLevel})
+
+}
+
+func GetAccessLevel(sessionToken string) (error, string) {
+
+	dbname := os.Getenv("POSTGES_DB")
+	dbuser := os.Getenv("POSTGRES_USERNAME")
+	dbpassword := os.Getenv("POSTGRES_PASSWORD")
+	dbhost := os.Getenv("POSTGRES_HOST")
+
+	connString := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=require port=5432", dbname, dbuser, dbpassword, dbhost)
+
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		return err, ""
+	}
+	defer db.Close()
+
+	var isAdmin bool
+
+	err = db.QueryRow(`
+		SELECT user_info.is_admin
+		FROM session
+		INNER JOIN user_info ON session.email = user_info.email
+		WHERE session.session_token = $1;
+		`, sessionToken).Scan(&isAdmin)
+	if err != nil {
+		return err, ""
+	}
+
+	if isAdmin {
+		return nil, "admin"
+	} else {
+		return nil, "user"
+	}
+
+}
+
 // this is an admin only route
 func ProvisionAccount(c *gin.Context) {
 	// POST req type
