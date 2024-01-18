@@ -74,6 +74,11 @@ func main() {
 		tennant.POST("/property_tennants", PropertyTennantIDList)
 	}
 
+	payment := r.Group("/payment")
+	{
+		payment.GET("/list_user", listUserPayments)
+	}
+
 	// CRON job for setting up invoices
 	s := gocron.NewScheduler(time.UTC)
 	// How often do we run the task?
@@ -104,6 +109,17 @@ func main() {
 	})
 
 	r.Run(":80")
+}
+
+func listUserPayments(c *gin.Context) {
+	output := `
+	[
+    { 'id': 1, 'due': 100, 'due_date': '2023-12-01', 'type': 'Utility' },
+    { 'id': 2, 'due': 200, 'due_date': '2023-12-05', 'type': 'Rent' },
+    { 'id': 3, 'due': 150, 'due_date': '2023-12-10', 'type': 'Late Fee' }
+	]
+	`
+	c.JSON(200, output)
 }
 
 type Property struct {
